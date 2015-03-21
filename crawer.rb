@@ -1,5 +1,6 @@
 require 'nokogiri'
 require 'anemone'
+require 'csv'
 
 opts = {
 	depth_limit: 0
@@ -52,4 +53,12 @@ i = 0
 values.each do |val|
 	puts attributes[i] + "\t: " + val
 	i += 1
+end
+
+# CSV出力
+rows = [attributes, values]
+CSV.open("output.csv", "wb") do |csv|
+	rows.each do |line|
+		csv << line
+	end
 end
