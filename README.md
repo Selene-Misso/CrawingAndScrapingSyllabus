@@ -49,17 +49,17 @@ Webページを操作し，ページを移動する際に使用する．
 
   コマンドラインを開き，以下を実行する．
 
-```
-$ ruby FindSyllabus.rb
-```
+  ```
+  $ ruby FindSyllabus.rb
+  ```
   
-出力結果をファイルに保存したい場合は，以下のようにリダイレクトする．
-作成されたファイルの文字コードはUTF-8になる．なお， filename.csv は
-自由に変更してよい．
+  出力結果をファイルに保存したい場合は，以下のように > を用いてリダイレクトする．
+  作成されたファイルの文字コードはUTF-8になる．なお， filename.csv は
+  自由に変更してよい．
 
-```
-$ ruby FindSyllabus.rb > filename.csv
-```
+  ```
+  $ ruby FindSyllabus.rb > filename.csv
+  ```
 
 ## 処理の概要
 
