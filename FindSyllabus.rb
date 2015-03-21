@@ -8,9 +8,9 @@ year = "2014"
 
 # 学部コード
 #   シラバスの学部コード
-#     教養教育: 58, 文学部: 05,教育学部: 07,法学部: 15,理学部: 22,医学部: 42,薬学部: 44,工学部: 25
+#     教養教育: 58, 文学部: 05,教育学部: 07,法学部: 15,
+#     理学部: 22,医学部: 42,薬学部: 44,工学部: 25
 scd = "25"
-
 
 # 検索ページをクロールし，学部の検索結果を全て取得する
 opts = {
@@ -62,6 +62,14 @@ attributes = ["授業科目名(日本語)","授業科目名(英語)","時間割�
               "学期","曜日・時限","科目コード","科目分類", "選択／必修", "単位数",
               "講義題目","担当教員","教科書","担当教員氏名","担当教員所属"]
 
+# タイトル表示
+attributes.each do |title|
+	print title + "\t"
+end
+print "\n"
+
+cnt = 1
+
 jcd_list.each do |jcd|
 	url = base_url + jcd
 	values     = []
@@ -91,21 +99,26 @@ jcd_list.each do |jcd|
 			end
 			
 			# 担当教員氏名
-			page.doc.xpath("/html/body//table[@class='detail']//td[@class='kyoin1']").each do |node|
-				values.push(node.xpath("./text()").to_s)
-			end
+			#page.doc.xpath("/html/body//table[@class='detail']//td[@class='kyoin1']").each do |node|
+			#	values.push(node.xpath("./text()").to_s)
+			#end
 			# 担当教員所属
-			page.doc.xpath("/html/body//table[@class='detail']//td[@class='kyoin2']").each do |node|
-				values.push(node.xpath("./text()").to_s)
-			end
+			#page.doc.xpath("/html/body//table[@class='detail']//td[@class='kyoin2']").each do |node|
+			#	values.push(node.xpath("./text()").to_s)
+			#end
 		end
 	end
 
 	# 表示
 	i = 0
 	values.each do |val|
-		puts attributes[i].to_s + "\t: " + val.to_s
-		i += 1
+		# 改行空白を除去して表示
+		print val.to_s.gsub(/(\s)/,"") + "\t"
+		#puts attributes[i].to_s + "\t: " + val.to_s
+		#i += 1
 	end
-	puts "---------------------------------\n"
+	puts "\n"
+	#puts "---------------------------------\n"
+	warn cnt.to_s + "/" + jcd_list.length.to_s + "\r"
+	cnt += 1
 end
