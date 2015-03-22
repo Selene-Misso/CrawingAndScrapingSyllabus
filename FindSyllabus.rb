@@ -113,7 +113,7 @@ jcd_list.each do |jcd|
 	i = 0
 	values.each do |val|
 		# 改行空白を除去して表示
-		print val.to_s.gsub(/(\s)/,"") + "\t"
+		print val.to_s.gsub(/(\s)/," ") + "\t"
 		#puts attributes[i].to_s + "\t: " + val.to_s
 		#i += 1
 	end
