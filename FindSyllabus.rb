@@ -1,124 +1,43 @@
-require 'nokogiri'
-require 'anemone'
+require 'net/http'
 require 'uri'
-
+require 'json'
+require 'csv'
 
 # 年度
-year = "2014"
+year = "2015"
 
 # 学部コード
 #   シラバスの学部コード
-#     教養教育: 58, 文学部: 05,教育学部: 07,法学部: 15,
-#     理学部: 22,医学部: 42,薬学部: 44,工学部: 25
-scd = "25"
+#   05:文学部, 07:教育学部, 08:教育学研究科, 15:法学部, 22:理学部
+#   25:工学部, 42:医学部, 44:薬学部, 45:保健学教育部, 
+#   58:教養教育（一般教育）, 59:教養教育（大学院）, 61:自然科学研究科
+#   66:社会文化科学研究科, 68:医学教育部, 69:薬学教育部, 70:法曹養成研究科
+#   72:養護教諭特別別科, 73:特別支援教育特別専攻科
+scd = "22"
 
-# 検索ページをクロールし，学部の検索結果を全て取得する
-opts = {
-	depth_limit: 1
-}
-url = "http://syllabus.jimu.kumamoto-u.ac.jp/kusy_result.php?nendo="+ year +"&scd=" + scd +"&limit=100&offset=1"
-jcd_list = []
+## 一覧取得
+base  = "http://syllabus.kumamoto-u.ac.jp/rest/auth/syllabusList.json?"
+enum =	[
+		["locale"		,"ja"],		# 表示言語
+#		["mode"			,"count"],	# 件数取得モード切替
+		["offset"		,"0"],		# 結果表示オフセット
+		["nendo"		, year],	# 年度
+		["jikanwari_shozokucd",scd],# 時間割所属
+#		["kaikoKbn"		,""],		# 開講区分
+#		["kamoku"		,""],		# 科目名
+#		["jikanwaricd"	,""],		# 時間割コード
+#		["tanto_kyoin"	,""],		# 担当教員
+#		["keyword"		,""],		# キーワード
+#		["limit"		,"100"]		# 表示件数
+		]
+path = base + URI.encode_www_form(enum)
+uri = URI.parse(path)
+json = Net::HTTP.get(uri)
+result = JSON.parse(json)
+puts result.length
 
-Anemone.crawl(url, opts) do |anemone|
-	
-	anemone.focus_crawl do |page|
-		page.links.keep_if { |link|
-			# 検索ページのみにジャンプする
-			link.to_s.match(/kusy_result/)
-		} 
+CSV.open("#{year}#{result[1][2]}.csv","wb", :encoding => "SJIS") do |csv|
+	result.each do |bo|
+		csv << bo
 	end
-	
-	anemone.on_every_page do |page|
-
-		# リスト取得
-		page.doc.xpath("/html/body//table[@class='kekkameisai']//tr").each do |node|
-			#print node.xpath(".//td[@class='no2']/text()").to_s + "\t"
-			#print node.xpath(".//td[@class='kamoku2']/a/text()").to_s + "\t"
-			href = node.xpath(".//td[@class='kamoku2']/a/@href").to_s
-			
-			# URLから時間割コードを取得し，保存
-			hrefAry = URI.decode_www_form(href)
-			jcd_list.push(hrefAry.assoc('jcd').last)
-			#print hrefAry.assoc('scd').last + "\t" + hrefAry.assoc('jcd').last + "\t"
-			#print node.xpath(".//td[@class='kamoku2']/a/@href").to_s + "\t"
-			#print node.xpath(".//td[@class='kaiko_nenji2']/text()").to_s + "\t"
-			#print node.xpath(".//td[@class='gakki2']/text()").to_s + "\t"
-			#print node.xpath(".//td[@class='tanisu2']/text()").to_s + "\t"
-			#print node.xpath(".//td[@class='kyoinmei2']/text()").to_s + "\t"
-			#print "\n"
-		end
-	end
-end
-
-
-# 各シラバスをクローリング
-
-opts = {
-	depth_limit: 0
-}
-
-base_url = "http://syllabus.jimu.kumamoto-u.ac.jp/kusy_detail.php?nendo="+year+"&scd="+scd+"&jcd="
-attributes = ["授業科目名(日本語)","授業科目名(英語)","時間割コード","開講年次", 
-              "学期","曜日・時限","科目コード","科目分類", "選択／必修", "単位数",
-              "講義題目","担当教員","教科書","担当教員氏名","担当教員所属"]
-
-# タイトル表示
-attributes.each do |title|
-	print title + "\t"
-end
-print "\n"
-
-cnt = 1
-
-jcd_list.each do |jcd|
-	url = base_url + jcd
-	values     = []
-
-	Anemone.crawl(url, opts) do |anemone|
-		anemone.on_every_page do |page|
-
-			# 授業科目名
-			page.doc.xpath("/html/body//table[@class='detail']//td[@class='kamokumei']").each do |node|
-				values.push(node.xpath("./text()").to_s)
-			end		
-			
-			# 時間割コード, 開講年次, 学期, 曜日・時限, 科目コード, 
-			# 科目分類,選択／必修, 単位数
-			page.doc.xpath("/html/body//table[@class='detail']//td[@class='basic1']").each do |node|
-				values.push(node.xpath("./text()").to_s)
-			end
-
-			# 講義題目, 担当教員
-			page.doc.xpath("/html/body//table[@class='detail']//td[@class='basic2']").each do |node|
-				values.push(node.xpath("./text()").to_s)
-			end
-			
-			# 教科書
-			page.doc.xpath("/html/body//table[@class='detail']//text").each do |node|
-				values.push(node.xpath("./text()").to_s)
-			end
-			
-			# 担当教員氏名
-			#page.doc.xpath("/html/body//table[@class='detail']//td[@class='kyoin1']").each do |node|
-			#	values.push(node.xpath("./text()").to_s)
-			#end
-			# 担当教員所属
-			#page.doc.xpath("/html/body//table[@class='detail']//td[@class='kyoin2']").each do |node|
-			#	values.push(node.xpath("./text()").to_s)
-			#end
-		end
-	end
-
-	# 表示
-	i = 0
-	values.each do |val|
-		# 改行空白を除去して表示
-		print val.to_s.gsub(/(\s)/," ") + "\t"
-		#puts attributes[i].to_s + "\t: " + val.to_s
-		#i += 1
-	end
-	puts "\n"
-	#puts "---------------------------------\n"
-	warn cnt.to_s + "/" + jcd_list.length.to_s + "\r"
-	cnt += 1
 end
