@@ -31,13 +31,13 @@ while offset < count do
     if(i == 0 && offset == 0) then
       # 初回のみタイトル行を格納
       syllabus_list.push(list)
-#      puts list.map{|s| "\"#{s}\""}.join(",")
+      puts list.map{|s| "\"#{s}\""}.join(",")
     elsif (i == 0) then
       # なにもしない
     else
       # シラバス一覧を一時保存
       syllabus_list.push(list)
-#      puts list.map{|s| "\"#{s}\""}.join(",")
+      puts list.map{|s| "\"#{s}\""}.join(",")
     end
     i += 1
   end
@@ -47,12 +47,12 @@ end
 
 
 # シラバス詳細を取得
-base_url = "http://syllabus.kumamoto-u.ac.jp/rest/auth/syllabusView.json?locale=ja&"
-uri = base_url + "nendo=#{year}&jikanwari_shozokucd=05&jikanwaricd=10010"
-res = open(uri).read
-json_data = JSON.parse(res)
-syllabus = JSON.pa
-puts JSON.pretty_generate(json_data[0])
+#base_url = "http://syllabus.kumamoto-u.ac.jp/rest/auth/syllabusView.json?locale=ja&"
+#uri = base_url + "nendo=#{year}&jikanwari_shozokucd=05&jikanwaricd=10010"
+#res = open(uri).read
+#json_data = JSON.parse(res)
+#syllabus = JSON.pa
+#puts JSON.pretty_generate(json_data[0])
 
 #puts json_data
 #json_data.each do |list|
