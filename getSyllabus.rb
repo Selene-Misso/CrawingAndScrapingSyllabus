@@ -1,6 +1,7 @@
 require "open-uri"
 require "json"
 require "optparse"
+require 'kconv'
 
 module Jikanwari
   # yobiで取得する値を，日本語の曜日に変換する
@@ -158,13 +159,13 @@ module Jikanwari
     attribute = Jikanwari.getAttribute
     attribute.each do |att|
       if att[0].to_s == "when" then
-        print "\"#{att[1][0]["yobi"]}\","
-        print "\"#{att[1][0]["jigen"]}\","
+        print "\"#{att[1][0]["yobi"]}\",".tosjis
+        print "\"#{att[1][0]["jigen"]}\",".tosjis
       else
-        print "\"#{att[1].to_s}\","
+        print "\"#{att[1].to_s}\",".tosjis
       end
     end
-    print "\"更新日\"\n"
+    print "\"更新日\"\n".tosjis
   end
   module_function :getYoubi
   module_function :getSemes
@@ -176,9 +177,9 @@ module Jikanwari
 end
 
 # プログラムの引数の処理
-# 年度
+## 年度
 year = 2015
-# 所属コード
+## 所属コード
 shozokucd = 22
 
 opt = OptionParser.new
@@ -210,7 +211,7 @@ lists.each do |list|
   shozokucd = list[1]
   jikanwaricd = list[3]
   update = list[7]
-  puts "#{Jikanwari.getSyllabus(year, shozokucd, jikanwaricd)}\"#{update}\""
+  puts "#{Jikanwari.getSyllabus(year, shozokucd, jikanwaricd)}\"#{update}\"".tosjis
   ## 進捗表示
   $stderr.print sprintf("%d/%d %.1f%",i,lists.length,i.to_f/lists.length.to_f*100)+"\r"
   i += 1
