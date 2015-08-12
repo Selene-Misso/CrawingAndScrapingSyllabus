@@ -1,12 +1,6 @@
 require "open-uri"
 require "json"
-
-# 年度を指定
-year = 2015
-# 所属コードを指定
-##  教養教育: 58, 文学部: 05,教育学部: 07,法学部: 15,
-##  理学部: 22,医学部: 42,薬学部: 44,工学部: 25
-shozokucd = 22
+require "optparse"
 
 module Jikanwari
   # yobiで取得する値を，日本語の曜日に変換する
@@ -181,6 +175,25 @@ module Jikanwari
   module_function :showTitles
 end
 
+# プログラムの引数の処理
+# 年度
+year = 2015
+# 所属コード
+shozokucd = 22
+
+opt = OptionParser.new
+descriptionOfYear = "取得するシラバスの年度を指定する。\n" + 
+		"\t\tデフォルト値は2015。何も指定しない場合はデフォルト値を用いる。"
+descriptionOfShozokucd = "取得するシラバスの所属コードを指定する。\n" + 
+		"\t\tデフォルト値は22。何も指定しない場合はデフォルト値を用いる。\n" + 
+		"\t\t\t 58 教養教育\t 05 文学部\n" + 
+		"\t\t\t 07 教育学部\t 15 法学部\n" + 
+		"\t\t\t 22 理学部\t 42 医学部\n" + 
+		"\t\t\t 44 薬学部\t 25 工学部"
+opt.on('-y VALUE','--year VALUE', descriptionOfYear) {|v| year = v.to_i}
+opt.on('-s VALUE','--shozokucd VALUE', descriptionOfShozokucd) {|v| shozokucd = v.to_i}
+opt.parse!(ARGV)
+
 # ここから メインの処理
 
 ## 1行目のタイトルを表示
@@ -188,6 +201,8 @@ Jikanwari.showTitles
 
 ## シラバス一覧を取得
 lists = Jikanwari.getList(year, shozokucd)
+$stderr.print sprintf("%d年度 %s\n", lists[0][0], lists[0][2])
+
 ## 一覧から一行ずつ取り出して表示
 i = 1
 lists.each do |list|
