@@ -178,9 +178,9 @@ end
 
 # プログラムの引数の処理
 ## 年度
-year = 2015
+year = "2015"
 ## 所属コード
-shozokucd = 22
+shozokucd = "22"
 
 opt = OptionParser.new
 descriptionOfYear = "取得するシラバスの年度を指定する。\n" + 
@@ -191,8 +191,8 @@ descriptionOfShozokucd = "取得するシラバスの所属コードを指定す
 		"\t\t\t 07 教育学部\t 15 法学部\n" + 
 		"\t\t\t 22 理学部\t 42 医学部\n" + 
 		"\t\t\t 44 薬学部\t 25 工学部"
-opt.on('-y VALUE','--year VALUE', descriptionOfYear) {|v| year = v.to_i}
-opt.on('-s VALUE','--shozokucd VALUE', descriptionOfShozokucd) {|v| shozokucd = v.to_i}
+opt.on('-y VALUE','--year VALUE', descriptionOfYear) {|v| year = v}
+opt.on('-s VALUE','--shozokucd VALUE', descriptionOfShozokucd) {|v| shozokucd = v}
 opt.parse!(ARGV)
 
 # ここから メインの処理
