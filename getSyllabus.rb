@@ -1,7 +1,8 @@
 require "open-uri"
 require "json"
 require "optparse"
-require 'kconv'
+require "kconv"
+require "sanitize"
 
 module Jikanwari
   # yobiで取得する値を，日本語の曜日に変換する
@@ -109,20 +110,20 @@ module Jikanwari
   # 科目のシラバスを取得する
   # 入力: 学年，所属コード，時間割コード
   # 出力: 文字列
-  def getSyllabus(year, shozokucd, jikanwaricd, cookie_str)
+  def getSyllabus(year, shozokucd, jikanwaricd)
     ## 基本情報 取得
     uri = "http://syllabus.kumamoto-u.ac.jp/rest/auth/courseInfoBasic.json?" +
           "locale=ja&nendo=#{year}&jikanwari_shozokucd=#{shozokucd}&" +
           "jikanwaricd=#{jikanwaricd}"
 
-    res = open(uri, 'Cookie' => cookie_str).read
+    res = open(uri).read
     json_data = JSON.parse(res)
 
     ## 詳細情報 取得
     uri = "http://syllabus.kumamoto-u.ac.jp/rest/auth/syllabusView.json?" +
           "locale=ja&nendo=#{year}&jikanwari_shozokucd=#{shozokucd}&" +
           "jikanwaricd=#{jikanwaricd}"
-    res = open(uri, 'Cookie' => cookie_str).read
+    res = open(uri).read
     json_data_detail = JSON.parse(res)
 
     ## 詳細情報からテキストの情報をだけを取り出す
@@ -132,6 +133,9 @@ module Jikanwari
     ## 空行を除去
     json_data[0]["textbook"].gsub!(/^\n/, "")
     json_data[0]["textbook"].strip!
+    ## HTMLタグを除去
+    str = Sanitize.clean(json_data[0]["textbook"])
+    json_data[0]["textbook"] = str
 
     ## シラバス情報をCSV形式に変換
     csv = ""
@@ -206,21 +210,13 @@ lists = Jikanwari.getList(year, shozokucd)
 $stderr.print sprintf("%d年度 %s\n", lists[0][0], lists[0][2])
 
 ## 一覧から一行ずつ取り出して表示
-### Cookieハッシュ取得
-cookie_str = "JSESSIONID=FFFFFFFFFFFFFFFFFFFFFFF"
-open("Cookie.txt") do |file|
-    file.each do |line|
-        ### 最後の行のハッシュのみ有効
-        cookie_str = line
-    end
-end
 i = 1
 lists.each do |list|
   year = list[0]
   shozokucd = list[1]
   jikanwaricd = list[3]
   update = list[7]
-  puts "#{Jikanwari.getSyllabus(year, shozokucd, jikanwaricd, cookie_str)}\"#{update}\"".tosjis
+  puts "#{Jikanwari.getSyllabus(year, shozokucd, jikanwaricd)}\"#{update}\"".tosjis
   ## 進捗表示
   $stderr.print sprintf("%d/%d %.1f%",i,lists.length,i.to_f/lists.length.to_f*100)+"\r"
   i += 1
