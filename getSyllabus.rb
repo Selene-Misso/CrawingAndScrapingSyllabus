@@ -109,19 +109,20 @@ module Jikanwari
   # 科目のシラバスを取得する
   # 入力: 学年，所属コード，時間割コード
   # 出力: 文字列
-  def getSyllabus(year, shozokucd, jikanwaricd)
+  def getSyllabus(year, shozokucd, jikanwaricd, cookie_str)
     ## 基本情報 取得
     uri = "http://syllabus.kumamoto-u.ac.jp/rest/auth/courseInfoBasic.json?" +
           "locale=ja&nendo=#{year}&jikanwari_shozokucd=#{shozokucd}&" +
           "jikanwaricd=#{jikanwaricd}"
-    res = open(uri).read
+
+    res = open(uri, 'Cookie' => cookie_str).read
     json_data = JSON.parse(res)
 
     ## 詳細情報 取得
     uri = "http://syllabus.kumamoto-u.ac.jp/rest/auth/syllabusView.json?" +
           "locale=ja&nendo=#{year}&jikanwari_shozokucd=#{shozokucd}&" +
           "jikanwaricd=#{jikanwaricd}"
-    res = open(uri).read
+    res = open(uri, 'Cookie' => cookie_str).read
     json_data_detail = JSON.parse(res)
 
     ## 詳細情報からテキストの情報をだけを取り出す
@@ -205,13 +206,21 @@ lists = Jikanwari.getList(year, shozokucd)
 $stderr.print sprintf("%d年度 %s\n", lists[0][0], lists[0][2])
 
 ## 一覧から一行ずつ取り出して表示
+### Cookieハッシュ取得
+cookie_str = "JSESSIONID=FFFFFFFFFFFFFFFFFFFFFFF"
+open("Cookie.txt") do |file|
+    file.each do |line|
+        ### 最後の行のハッシュのみ有効
+        cookie_str = line
+    end
+end
 i = 1
 lists.each do |list|
   year = list[0]
   shozokucd = list[1]
   jikanwaricd = list[3]
   update = list[7]
-  puts "#{Jikanwari.getSyllabus(year, shozokucd, jikanwaricd)}\"#{update}\"".tosjis
+  puts "#{Jikanwari.getSyllabus(year, shozokucd, jikanwaricd, cookie_str)}\"#{update}\"".tosjis
   ## 進捗表示
   $stderr.print sprintf("%d/%d %.1f%",i,lists.length,i.to_f/lists.length.to_f*100)+"\r"
   i += 1
