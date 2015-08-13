@@ -135,7 +135,10 @@ module Jikanwari
     json_data[0]["textbook"].strip!
     ## HTMLタグを除去
     str = Sanitize.clean(json_data[0]["textbook"])
+    ## 文字列中のダブルクォーテーションを除去
+    str.gsub!("\"", "\'\'")
     json_data[0]["textbook"] = str
+    
 
     ## シラバス情報をCSV形式に変換
     csv = ""
