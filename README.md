@@ -1,4 +1,4 @@
-# CrawingAndScrapingSyllabus
+# CrawingSyllabus
 
 これは大学のシラバスのWebAPIを利用して，
 シラバスの各ページの情報を出力します．
